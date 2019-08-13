@@ -11,12 +11,12 @@ class Blockchain(object):
         # 新しいトランザクションをリストに加える
         pass
 
-    @staticmethod
-    def hash(block):
-        # ブロックをハッシュ化する
+    @property
+    def last_block(self):
+        # チェーンの最後のブロックをリターンする
         pass
 
     @staticmethod
-    def last_block(self):
-        # チェーンの最後のブロックをリターンする
+    def hash(block):
+        # ブロックをハッシュ化する
         pass
