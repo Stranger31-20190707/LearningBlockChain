@@ -1,22 +1,70 @@
+import hashlib
+import json
+from time import time
+
 class Blockchain(object):
     def __init__(self):
         self.chain = []
         self.current_transactions = []
 
-    def new_block(self):
-        # 新しいブロックを作り、チェーンに加える
-        pass
+        # ジェネシスブロックを作る
+        # 実装者注：
+        # メソッド引数と呼び出し時の並び順が異なっているが、元のソースがそのままなのでそのまま実装する。
+        # （キーワード引数で呼び出しているので問題はないが非常に気になる）
+        # 今後実装が終わった際に見直すかもしれない
+        self.new_block(previous_hash=1, proof=100)
 
-    def new_transaction(self):
-        # 新しいトランザクションをリストに加える
-        pass
+    def new_block(self, proof, previous_hash=None):
+        """
+        ブロックチェーンに新しいブロックを作る
+        :param proof: <int> プルーフ・オブ・ワークアルゴリズムから得られるプルーフ
+        :param previous_hash: (オプション) <str> 前のブロックのハッシュ
+        :return: <dict> 新しいブロック
+        """
+        block = {
+            'index': len(self.chain) + 1,
+            'timestamp': time(),
+            'transactions': self.current_transactions,
+            'proof': proof,
+            'previous_hash': previous_hash or self.hash(self.chain[-1]),    # last_blockに置換可能？
+        }
+
+        # 現在のトランザクションリストをリセット
+        self.current_transactions = []
+
+        self.chain.append(block)
+        return block
+
+    def new_transaction(self, sender, recipient, amount):
+        """
+        次に採掘されるブロックに加える新しいトランザクションを作る
+        :param sender: <str> 送信者のアドレス
+        :param recipient: <str> 受信者のアドレス
+        :param amount: <int> 量
+        :return: <int> このトランザクションを含むブロックのアドレス
+        """
+
+        self.current_transactions.append({
+            'sender': sender,
+            'recipient': recipient,
+            'amount': amount,
+        })
+
+        return self.last_block['index'] + 1
 
     @property
     def last_block(self):
-        # チェーンの最後のブロックをリターンする
-        pass
+        return self.chain[-1]
 
     @staticmethod
     def hash(block):
-        # ブロックをハッシュ化する
-        pass
+        """
+        ブロックの SHA-256 ハッシュを作る
+        :param block: <dict> ブロック
+        :return: <str> ハッシュ値
+        """
+
+        # 必ずディクショナリ（辞書型のオブジェクト）がソートされている必要がある
+        # そうでないと、一貫性のないハッシュとなってしまう
+        block_string = json.dumps(block,sort_keys=True).encode()
+        return hashlib.sha256(block_string).hexdigest()
